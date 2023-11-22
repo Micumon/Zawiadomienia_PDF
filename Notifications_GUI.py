@@ -2,8 +2,6 @@ import os
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
-# from tkinter import messagebox
-# import os
 
 
 class NotificationsOrganizer:
@@ -13,6 +11,9 @@ class NotificationsOrganizer:
         mframe = ttk.Frame(root, padding=10, width=800, height=800, borderwidth=5, relief="solid")
         # noinspection PyTypeChecker
         mframe.grid(column=0, row=0, sticky=(N, S, E, W))
+
+        self.receipt_path = ""
+        self.notifications_path = ""
 
         self.label_folder_with_zw_zaw = ttk.Label(mframe,
                                                   text='Wybierz folder zawierający foldery:\n'
@@ -44,7 +45,7 @@ class NotificationsOrganizer:
 
         self.__separator_nr2 = ttk.Separator(mframe, orient="vertical")
         # noinspection PyTypeChecker
-        self.__separator_nr2.grid(row=2, rowspan=3, column=4, sticky=(N, S))
+        self.__separator_nr2.grid(row=2, rowspan=5, column=4, sticky=(N, S))
 
         self.label_zaw = ttk.Label(mframe, text="Zawiadomienia: ")
         # noinspection PyTypeChecker
@@ -85,6 +86,18 @@ class NotificationsOrganizer:
         self.label_explode_zaw = ttk.Label(mframe, text="Zaznacz na liście\nplik z zawiadomieniami.")
         self.label_explode_zaw.grid(column=5, columnspan=4, row=6, sticky=(N, W))
 
+        self.var_merge = StringVar(value="0")
+        self.check_merge_all = ttk.Checkbutton(mframe, text="Połączyć zawiadomienia ze zwrotkami?",
+                                               variable=self.var_merge, state='disabled')
+        self.check_merge_all.grid(column=0, columnspan=9, row=7, sticky=(N, W))
+
+        self.button_execute = ttk.Button(mframe, text="Wykonaj operacje",
+                                         command=lambda: self.action_execute())
+        self.button_execute.grid(column=0, columnspan=3, row=8, sticky=(N, W))
+
+        self.button_reset = ttk.Button(mframe, text="Resetuj", command=lambda: self.action_reset())
+        self.button_reset.grid(column=5, columnspan=3, row=8, sticky=(N, W))
+
     def action_check_explode_zaw(self):
         match self.var_explode_zaw.get():
             case "1":
@@ -93,31 +106,69 @@ class NotificationsOrganizer:
                 self.label_explode_zaw.configure(text="\n")
 
     @staticmethod
-    def __notifications_folder_finder(list_arg):
+    def __folder_finder(list_arg):
+        result_receipt = ""
+        result_notifications = ""
         notifications_list = ("zawiadomienia", "Zawiadomienia", "ZAWIADOMIENIA", "ZAW", "zaw", "Zaw")
+
         for note in notifications_list:
             if note in list_arg:
-                return note
+                result_notifications = note + "\\"
 
-    @staticmethod
-    def __receipt_folder_finder(list_arg):
         receipt_list = ("Zwrotki", "ZWROTKI", "zwrotki", "zw", "ZW", "Zw", "zwr", "Zwr", "ZWR")
         for note in receipt_list:
             if note in list_arg:
-                return note
+                result_receipt = note + "\\"
+
+        if result_notifications == "":
+            new_dir = os.getcwd()+r"\Zawiadomienia"
+            os.mkdir(new_dir)
+            result_notifications = "Zawiadomienia\\"
+            with open(new_dir + "\\Najpierw przygotuj zawiadomienia", "w") as file:
+                file.write("Pacan!")
+
+        if result_receipt == "":
+            new_dir = os.getcwd() + r"\Zwrotki"
+            os.mkdir(new_dir)
+            result_receipt = "Zwrotki\\"
+            with open(new_dir + "\\Najpierw przygotuj zwrotki", "w") as file:
+                file.write("Pacan!")
+
+        return result_receipt, result_notifications
 
     def action_button_folder_with_zw_zaw(self, working_path):
         os.chdir(working_path)
         folder_list = os.listdir()
-        notifications_dir_name = self.__notifications_folder_finder(folder_list) + "\\"
-        receipt_dir_name = self.__receipt_folder_finder(folder_list) + "\\"
+        receipt_dir_name, notifications_dir_name = self.__folder_finder(folder_list)
         self.var_list_zaw_list.set(os.listdir(notifications_dir_name))
         self.var_list_zw_list.set(os.listdir(receipt_dir_name))
         self.button_zw.configure(state="disable")
         self.button_zaw.configure(state="disable")
+        self.check_merge_all.configure(state="active")
 
     def action_button_zw(self, working_path):
-        pass
+        os.chdir(working_path)
+        self.var_list_zw_list.set(os.listdir())
+        self.button_zaw.configure(state="disabled")
+        self.button_folder_with_zw_zaw.configure(state="disabled")
+        self.check_explode_zaw.configure(state="disabled")
 
     def action_button_zaw(self, working_path):
+        os.chdir(working_path)
+        self.var_list_zaw_list.set(os.listdir())
+        self.button_zw.configure(state="disabled")
+        self.button_folder_with_zw_zaw.configure(state="disabled")
+
+    def action_execute(self):
         pass
+
+    def action_reset(self):
+        self.var_explode_zaw.set("1")
+        self.label_explode_zaw.configure(text="Zaznacz na liście\nplik z zawiadomieniami.")
+        self.var_list_zaw_list.set("")
+        self.var_list_zw_list.set("")
+        self.button_zw.configure(state="active")
+        self.button_zaw.configure(state="active")
+        self.check_merge_all.configure(state="disabled")
+        self.button_folder_with_zw_zaw.configure(state="active")
+        self.check_explode_zaw.configure(state="active")

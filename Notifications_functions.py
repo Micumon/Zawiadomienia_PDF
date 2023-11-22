@@ -94,3 +94,7 @@ def spliter(path):
                 output.write(output_stream)
             i += 1
     os.remove(path)
+
+
+def organizer(**kwargs):
+    pass
