@@ -2,6 +2,7 @@ import os
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog
+from Notifications_organizer import organizer
 
 
 class NotificationsOrganizer:
@@ -12,8 +13,10 @@ class NotificationsOrganizer:
         # noinspection PyTypeChecker
         mframe.grid(column=0, row=0, sticky=(N, S, E, W))
 
-        self.receipt_path = ""
-        self.notifications_path = ""
+        self.var_receipt_path = ""
+        self.var_notifications_path = ""
+        self.var_only_receipt = False
+        self.var_only_notifications = False
 
         self.label_folder_with_zw_zaw = ttk.Label(mframe,
                                                   text='Wybierz folder zawierający foldery:\n'
@@ -45,7 +48,7 @@ class NotificationsOrganizer:
 
         self.__separator_nr2 = ttk.Separator(mframe, orient="vertical")
         # noinspection PyTypeChecker
-        self.__separator_nr2.grid(row=2, rowspan=5, column=4, sticky=(N, S))
+        self.__separator_nr2.grid(row=2, rowspan=6, column=4, sticky=(N, S))
 
         self.label_zaw = ttk.Label(mframe, text="Zawiadomienia: ")
         # noinspection PyTypeChecker
@@ -86,17 +89,33 @@ class NotificationsOrganizer:
         self.label_explode_zaw = ttk.Label(mframe, text="Zaznacz na liście\nplik z zawiadomieniami.")
         self.label_explode_zaw.grid(column=5, columnspan=4, row=6, sticky=(N, W))
 
+        self.var_flip_names_zw = StringVar(value="0")
+        self.check_flip_names_zw = ttk.Checkbutton(mframe, text="Zamień imię z nazwiskiem",
+                                                   variable=self.var_flip_names_zw, state='disabled')
+        self.check_flip_names_zw.grid(column=0, columnspan=4, row=7, sticky=(N, W))
+
+        self.var_flip_names_zaw = StringVar(value="0")
+        self.check_flip_names_zaw = ttk.Checkbutton(mframe, text="Zamień imię z nazwiskiem",
+                                                   variable=self.var_flip_names_zaw, state='disabled')
+        self.check_flip_names_zaw.grid(column=5, columnspan=4, row=7, sticky=(N, W))
+
         self.var_merge = StringVar(value="0")
         self.check_merge_all = ttk.Checkbutton(mframe, text="Połączyć zawiadomienia ze zwrotkami?",
-                                               variable=self.var_merge, state='disabled')
-        self.check_merge_all.grid(column=0, columnspan=9, row=7, sticky=(N, W))
+                                               variable=self.var_merge, state='disabled',
+                                               command=lambda: self.action_check_merge())
+        self.check_merge_all.grid(column=0, columnspan=9, row=8, sticky=(N, W))
+
+        self.var_merge_merged = StringVar(value="0")
+        self.check_merge_merged = ttk.Checkbutton(mframe, text="Połączyć wynik?",
+                                                  variable=self.var_merge_merged, state='disabled')
+        self.check_merge_merged.grid(column=0, columnspan=9, row=9, sticky=(N, W))
 
         self.button_execute = ttk.Button(mframe, text="Wykonaj operacje",
                                          command=lambda: self.action_execute())
-        self.button_execute.grid(column=0, columnspan=3, row=8, sticky=(N, W))
+        self.button_execute.grid(column=0, columnspan=3, row=10, sticky=(N, W))
 
         self.button_reset = ttk.Button(mframe, text="Resetuj", command=lambda: self.action_reset())
-        self.button_reset.grid(column=5, columnspan=3, row=8, sticky=(N, W))
+        self.button_reset.grid(column=5, columnspan=3, row=10, sticky=(N, W))
 
     def action_check_explode_zaw(self):
         match self.var_explode_zaw.get():
@@ -105,8 +124,7 @@ class NotificationsOrganizer:
             case "0":
                 self.label_explode_zaw.configure(text="\n")
 
-    @staticmethod
-    def __folder_finder(list_arg):
+    def __folder_finder(self, list_arg):
         result_receipt = ""
         result_notifications = ""
         notifications_list = ("zawiadomienia", "Zawiadomienia", "ZAWIADOMIENIA", "ZAW", "zaw", "Zaw")
@@ -119,6 +137,9 @@ class NotificationsOrganizer:
         for note in receipt_list:
             if note in list_arg:
                 result_receipt = note + "\\"
+
+        self.var_receipt_path = os.getcwd() + "\\" + result_receipt
+        self.var_notifications_path = os.getcwd() + "\\" +result_notifications
 
         if result_notifications == "":
             new_dir = os.getcwd()+r"\Zawiadomienia"
@@ -145,25 +166,60 @@ class NotificationsOrganizer:
         self.button_zw.configure(state="disable")
         self.button_zaw.configure(state="disable")
         self.check_merge_all.configure(state="active")
+        self.check_flip_names_zaw.configure(state="active")
+        self.check_flip_names_zw.configure(state="active")
 
     def action_button_zw(self, working_path):
         os.chdir(working_path)
+        self.var_receipt_path = os.getcwd() + "\\"
         self.var_list_zw_list.set(os.listdir())
         self.button_zaw.configure(state="disabled")
         self.button_folder_with_zw_zaw.configure(state="disabled")
         self.check_explode_zaw.configure(state="disabled")
+        self.var_only_receipt = True
+        self.check_flip_names_zw.configure(state="active")
 
     def action_button_zaw(self, working_path):
         os.chdir(working_path)
+        self.var_notifications_path = os.getcwd() + "\\"
         self.var_list_zaw_list.set(os.listdir())
         self.button_zw.configure(state="disabled")
         self.button_folder_with_zw_zaw.configure(state="disabled")
+        self.var_only_notifications = True
+        self.check_flip_names_zaw.configure(state="active")
+
+    def action_check_merge(self):
+        match self.var_merge.get():
+            case "1":
+                self.check_merge_merged.configure(state="active")
+            case "0":
+                self.check_merge_merged.configure(state="disable")
 
     def action_execute(self):
-        pass
+        if self.var_notifications_path != "":
+            note_file = self.var_notifications_path + self.list_zaw.get(self.list_zaw.curselection()[0])
+        else:
+            note_file = ""
+
+        organizer(receipt_path=self.var_receipt_path,
+                  notifications_path=self.var_notifications_path,
+                  notifications_file=note_file,
+                  only_receipt=self.var_only_receipt,
+                  only_notifications=self.var_only_notifications,
+                  explode_notifications=bool(int(self.var_explode_zaw.get())),
+                  merge_rec_note=bool(int(self.var_merge.get())),
+                  flip_receipt=bool(int(self.var_flip_names_zaw.get())),
+                  flip_note=bool(int(self.var_flip_names_zw.get())),
+                  merge_all=bool(int(self.var_merge_merged.get()))
+                  )
 
     def action_reset(self):
+        self.var_notifications_path = ""
+        self.var_receipt_path = ""
+        self.var_only_receipt = False
+        self.var_only_notifications = False
         self.var_explode_zaw.set("1")
+        self.var_merge_merged.set("0")
         self.label_explode_zaw.configure(text="Zaznacz na liście\nplik z zawiadomieniami.")
         self.var_list_zaw_list.set("")
         self.var_list_zw_list.set("")
@@ -172,3 +228,9 @@ class NotificationsOrganizer:
         self.check_merge_all.configure(state="disabled")
         self.button_folder_with_zw_zaw.configure(state="active")
         self.check_explode_zaw.configure(state="active")
+        self.check_flip_names_zaw.configure(state="disabled")
+        self.check_flip_names_zw.configure(state="disabled")
+        self.check_merge_merged.configure(state="disabled")
+        self.var_merge.set("0")
+        self.var_flip_names_zaw.set("0")
+        self.var_flip_names_zw.set("0")
