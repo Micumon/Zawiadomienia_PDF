@@ -36,7 +36,7 @@ def _new_file_name_notifications(pdf):
     if "Urząd Miasta Łodzi" in page_str:
         return "Urząd Miasta Łodzi"
     else:
-        page_str = page_str.split("Z A W I")[0].split("/2023")[1].strip().split("\n")[0].strip()
+        page_str = page_str.split("Z A W I")[0].split("/2024")[1].strip().split("\n")[0].strip()
         return page_str
 
 
