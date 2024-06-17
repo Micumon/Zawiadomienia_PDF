@@ -36,7 +36,7 @@ def _new_file_name_notifications(pdf):
     if "Urząd Miasta Łodzi" in page_str:
         return "Urząd Miasta Łodzi"
     else:
-        page_str = page_str.split("Z A W I")[0].split("/2024")[1].strip().split("\n")[0].strip()
+        page_str = page_str.split("Z A W I")[0].split(".2024")[1].strip().split("\n")[0].strip()
         return page_str
 
 
@@ -106,7 +106,7 @@ def spliter(file, path):
         else:
             output = PyPDF2.PdfWriter()
             output.add_page(reader.pages[page])
-            output.add_page(reader.pages[page + 1])
+            # output.add_page(reader.pages[page + 1])
             with open(path + f"/{i}.pdf", "wb") as output_stream:
                 output.write(output_stream)
             i += 1
