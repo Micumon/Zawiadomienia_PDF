@@ -7,59 +7,58 @@ from Notifications_organizer import organizer
 
 class NotificationsOrganizer:
     def __init__(self, root: Tk):
-        root.title("Nazwy Zawiadomień")
-        root.grid()
-        mframe = ttk.Frame(root, padding=10, width=800, height=800, borderwidth=5, relief="solid")
-        # noinspection PyTypeChecker
+        self.root = root
+        self.root.title("Nazwy Zawiadomień")
+        self.root.grid()
+        mframe = ttk.Frame(self.root, padding=10, width=800, height=800, borderwidth=5, relief="solid")
         mframe.grid(column=0, row=0, sticky=(N, S, E, W))
 
+        self.progress_window = ""
         self.var_receipt_path = ""
         self.var_notifications_path = ""
         self.var_only_receipt = False
         self.var_only_notifications = False
 
+        # Folder selection for both options
+            # Label
         self.label_folder_with_zw_zaw = ttk.Label(mframe,
                                                   text='Wybierz folder zawierający foldery:\n'
                                                        '"zawiadomienia" i "zwrotki":',
                                                   justify="left")
-        # noinspection PyTypeChecker
         self.label_folder_with_zw_zaw.grid(column=0, columnspan=4, row=0, sticky=(N, W))
-
-        # self.var_folder_with_zw_zaw = StringVar()
+            # Button
         self.button_folder_with_zw_zaw = (
             ttk.Button(mframe,
                        text="Przeglądaj...",
                        command=lambda: self.action_button_folder_with_zw_zaw(filedialog.askdirectory())))
-        # noinspection PyTypeChecker
         self.button_folder_with_zw_zaw.grid(column=5, columnspan=4, row=0, sticky=(N, W))
 
+        # Separator
         self.__separator_nr1 = ttk.Separator(mframe, orient="horizontal")
-        # noinspection PyTypeChecker
         self.__separator_nr1.grid(row=1, columnspan=9, sticky=(N, W, E))
 
+        # Only receipts
         self.label_zw = ttk.Label(mframe, text="Zwrotki: ")
-        # noinspection PyTypeChecker
         self.label_zw.grid(column=0, columnspan=2, row=2, sticky=(N, W))
 
         self.button_zw = ttk.Button(mframe, text="Przeglądaj...",
                                     command=lambda: self.action_button_zw(filedialog.askdirectory()))
-        # noinspection PyTypeChecker
         self.button_zw.grid(column=2, columnspan=2, row=2, sticky=(N, W))
 
         self.__separator_nr2 = ttk.Separator(mframe, orient="vertical")
-        # noinspection PyTypeChecker
         self.__separator_nr2.grid(row=2, rowspan=6, column=4, sticky=(N, S))
 
+        # Only Notes
         self.label_zaw = ttk.Label(mframe, text="Zawiadomienia: ")
-        # noinspection PyTypeChecker
         self.label_zaw.grid(column=5, columnspan=2, row=2, sticky=(N, W))
 
         self.button_zaw = ttk.Button(mframe,
                                      text="Przeglądaj...",
                                      command=lambda: self.action_button_zaw(filedialog.askdirectory()))
-        # noinspection PyTypeChecker
+
         self.button_zaw.grid(column=7, columnspan=2, row=2, sticky=(N, W))
 
+        # Listbox for receipts
         self.var_list_zw_list = StringVar()
         self.list_zw = Listbox(mframe, height=15, listvariable=self.var_list_zw_list)
         self.list_zw.grid(column=0, row=3, columnspan=3)
@@ -70,6 +69,7 @@ class NotificationsOrganizer:
         self.scrollbar_list_zw_y.grid(column=3, row=3, sticky=(N, S, W))
         self.scrollbar_list_zw_x.grid(column=0, columnspan=3, row=4, sticky=(N, W, E))
 
+        # Listbox for notifications
         self.var_list_zaw_list = StringVar()
         self.list_zaw = Listbox(mframe, height=15, listvariable=self.var_list_zaw_list)
         self.list_zaw.grid(column=5, row=3, columnspan=3)
@@ -80,6 +80,7 @@ class NotificationsOrganizer:
         self.scrollbar_list_zaw_y.grid(column=8, row=3, sticky=(N, S, W))
         self.scrollbar_list_zaw_x.grid(column=5, columnspan=3, row=4, sticky=(N, W, E))
 
+        # Checkboxes
         self.var_explode_zaw = StringVar(value="1")
         self.check_explode_zaw = ttk.Checkbutton(mframe, text="Rozbić plik z zawiadomieniami",
                                                  variable=self.var_explode_zaw,
@@ -110,12 +111,17 @@ class NotificationsOrganizer:
                                                   variable=self.var_merge_merged, state='disabled')
         self.check_merge_merged.grid(column=0, columnspan=9, row=9, sticky=(N, W))
 
+        # Execute
         self.button_execute = ttk.Button(mframe, text="Wykonaj operacje",
                                          command=lambda: self.action_execute())
         self.button_execute.grid(column=0, columnspan=3, row=10, sticky=(N, W))
 
+        # Reset
         self.button_reset = ttk.Button(mframe, text="Resetuj", command=lambda: self.action_reset())
         self.button_reset.grid(column=5, columnspan=3, row=10, sticky=(N, W))
+
+    def __default_note_file(self):
+        self.list_zaw.selection_set(0,0)
 
     def action_check_explode_zaw(self):
         match self.var_explode_zaw.get():
@@ -127,8 +133,9 @@ class NotificationsOrganizer:
     def __folder_finder(self, list_arg):
         result_receipt = ""
         result_notifications = ""
-        notifications_list = ("zawiadomienia", "Zawiadomienia", "ZAWIADOMIENIA", "ZAW", "zaw", "Zaw")
 
+
+        notifications_list = ("zawiadomienia", "Zawiadomienia", "ZAWIADOMIENIA", "ZAW", "zaw", "Zaw")
         for note in notifications_list:
             if note in list_arg:
                 result_notifications = note + "\\"
@@ -139,7 +146,7 @@ class NotificationsOrganizer:
                 result_receipt = note + "\\"
 
         self.var_receipt_path = os.getcwd() + "\\" + result_receipt
-        self.var_notifications_path = os.getcwd() + "\\" +result_notifications
+        self.var_notifications_path = os.getcwd() + "\\" + result_notifications
 
         if result_notifications == "":
             new_dir = os.getcwd()+r"\Zawiadomienia"
@@ -163,6 +170,7 @@ class NotificationsOrganizer:
         receipt_dir_name, notifications_dir_name = self.__folder_finder(folder_list)
         self.var_list_zaw_list.set(os.listdir(notifications_dir_name))
         self.var_list_zw_list.set(os.listdir(receipt_dir_name))
+        self.__default_note_file()
         self.button_zw.configure(state="disable")
         self.button_zaw.configure(state="disable")
         self.check_merge_all.configure(state="active")
@@ -173,6 +181,8 @@ class NotificationsOrganizer:
         os.chdir(working_path)
         self.var_receipt_path = os.getcwd() + "\\"
         self.var_list_zw_list.set(os.listdir())
+        self.var_list_zaw_list.set(["---"])
+        self.__default_note_file()
         self.button_zaw.configure(state="disabled")
         self.button_folder_with_zw_zaw.configure(state="disabled")
         self.check_explode_zaw.configure(state="disabled")
@@ -183,6 +193,7 @@ class NotificationsOrganizer:
         os.chdir(working_path)
         self.var_notifications_path = os.getcwd() + "\\"
         self.var_list_zaw_list.set(os.listdir())
+        self.__default_note_file()
         self.button_zw.configure(state="disabled")
         self.button_folder_with_zw_zaw.configure(state="disabled")
         self.var_only_notifications = True

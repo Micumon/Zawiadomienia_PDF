@@ -29,15 +29,34 @@ def _uniq_name(file_name, names):
             break
     return file_name
 
+# Searching function replaced
+# def _new_file_name_notifications(pdf):
+#     pdffile = PyPDF2.PdfReader(pdf)
+#     page_str = pdffile.pages[0].extract_text()
+#     if "Urząd Miasta Łodzi" in page_str:
+#         return "Urząd Miasta Łodzi"
+#     else:
+#         page_str = page_str.split("Z A W I")[0].split("tel. 42 674-13-13")[1].strip().split("\n")[0].strip()
+#         return page_str
+
 
 def _new_file_name_notifications(pdf):
     pdffile = PyPDF2.PdfReader(pdf)
     page_str = pdffile.pages[0].extract_text()
-    if "Urząd Miasta Łodzi" in page_str:
-        return "Urząd Miasta Łodzi"
-    else:
-        page_str = page_str.split("Z A W I")[0].split(".2024")[1].strip().split("\n")[0].strip()
-        return page_str
+    page_str = page_str.split("Z A W I")[0].split("\n")
+    delete_flags = ["Przedsiębiorstwo Usług", "dnia ", ".2024r.", ".2024", "Geodezyjnych i Kartograficznych",
+                    "GEOTRION", "Piłsudskiego 135", "674-13-13", "ZDT.ZOPG", "L.ks.rob"]
+
+    for i in range(len(page_str)):
+        page_str[i] = page_str[i].strip()
+        for fraze in delete_flags:
+            if fraze in page_str[i]:
+                page_str[i] = ""
+
+    while "" in page_str:
+        page_str.remove("")
+
+    return page_str[0]
 
 
 def _new_file_name_receipt(path):
