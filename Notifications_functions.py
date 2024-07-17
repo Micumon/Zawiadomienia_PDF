@@ -45,7 +45,7 @@ def _new_file_name_notifications(pdf):
     page_str = pdffile.pages[0].extract_text()
     page_str = page_str.split("Z A W I")[0].split("\n")
     delete_flags = ["Przedsiębiorstwo Usług", "dnia ", ".2024r.", ".2024", "Geodezyjnych i Kartograficznych",
-                    "GEOTRION", "Piłsudskiego 135", "674-13-13", "ZDT.ZOPG", "L.ks.rob"]
+                    "GEOTRION", "Piłsudskiego 135", "674-13-13", "ZDT.ZOPG", "L.ks.rob", "tel.", "Tel."]
 
     for i in range(len(page_str)):
         page_str[i] = page_str[i].strip()
