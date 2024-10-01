@@ -97,13 +97,13 @@ def merger(path_note, path_rec, lista_rec, names):
             merger_r_n.append(PyPDF2.PdfReader(f))
         with open(path_rec + "/" + n, 'rb') as f:
             merger_r_n.append(PyPDF2.PdfReader(f))
-        merger_r_n.write(path_note + f"/{c}.pdf")
+        merger_r_n.write(path_note + f"/{c if c >= 100 else ('0'+ str(c)) if c>=10 else ('00'+ str(c))}.pdf")
         c += 1
 
 
 def merger_all(path_note):
     os.chdir(path_note)
-    merger_all_files =PyPDF2.PdfMerger()
+    merger_all_files = PyPDF2.PdfMerger()
     os.mkdir("Wynik")
     path_result = path_note + "Wynik\\6 zawiadomienia i zwrotki.pdf"
     file_list = os.listdir()
